@@ -12,6 +12,9 @@ flask = "*"
 seaborn = "*"
 python-dotenv = "*"
 gunicorn = "*"
+plotly = "*"
+dash = "*"
+dash-bootstrap-components = "*"
 
 [dev-packages]
 
