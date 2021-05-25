@@ -15,6 +15,8 @@ gunicorn = "*"
 plotly = "*"
 dash = "*"
 dash-bootstrap-components = "*"
+tensorflow = "*"
+sklearn = "*"
 
 [dev-packages]
 
