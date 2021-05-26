@@ -58,7 +58,8 @@ app.config.suppress_callback_exceptions = True # see https://dash.plot.ly/urls
 app.title = 'Spotify-Tool' # appears in browser title bar
 server = app.server
 
-server.config["SQLALCHEMY_DATABASE_URI"] = "sqlite://spotify.sqlite3"
+server.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///spotify.sqlite3"
 server.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(server)
 db.init_app(server)
+db.create_all()

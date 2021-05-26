@@ -7,28 +7,34 @@ from dash.dependencies import Input, Output
 import joblib
 from tensorflow.keras.models import load_model
 import numpy as np
+from app import db, server, app
+from models import spotify
+import matplotlib.pyplot as plt
+
+encodings = joblib.load(r'assets\encoded_data.joblib')
+knn = joblib.load(r'assets\knn.joblib')
+model = load_model(r'assets\ae4')
 
 
-encodings = joblib.load(r'app\dash_template\assets\encoded_data.joblib')
-knn = joblib.load(r'app\dash_template\assets\knn.joblib')
-model = load_model(r'app\dash_template\assets\ae4')
 
-
-def recommend(index: int, n: int=5):
+def recommend(index: int, n: int=5) -> 'tuple[np.ndarray]':
     '''
+    ### Parameters
     index: index of song
     n: number of recommendations to pull
-    returns: array of distances, array of indexes for recommended songs. Includes
-        original song.
+
+    returns: (dist, ind), array of distances, array of indeces for recommended songs. Includes
+    original song.
     '''
     return knn.kneighbors([encodings[index]], n_neighbors=5)
 
 
-def get_songs(indeces: 'list[int]'):
-    ''' TODO
+def get_songs(indeces: 'list[int]') -> list:
+    '''
     Uses SQLAlchemy queries to return track data from their indeces
     '''
-    return None
+    data = [spotify.query.filter(spotify.id == x).one() for x in indeces]
+    return data
 
 
 # 2 column layout. 1st column width = 4/12
@@ -37,8 +43,10 @@ column1 = dbc.Col(
     [
         dcc.Markdown(
         ),
+        # toy tests with no meaning other than seeing what works
+        F"{get_songs([0, 0])}"
     ],
-    md=4,
+    md=4
 )
 
 column2 = dbc.Col(
