@@ -37,3 +37,7 @@ curs.execute("""
 SELECT COUNT(*) FROM spotify;
 """).fetchall()
 
+query = curs.execute("""
+select name, artists, danceability from spotify 
+where danceability > 0.8
+""").fetchall()

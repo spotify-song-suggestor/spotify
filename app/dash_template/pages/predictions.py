@@ -7,13 +7,11 @@ from dash.dependencies import Input, Output
 import joblib
 from tensorflow.keras.models import load_model
 import numpy as np
-# Imports from this application
-from app import app
 
 
-encodings = joblib.load(r'app\dash-template\assets\encoded_data.joblib')
-knn = joblib.load(r'app\dash-template\assets\knn.joblib')
-model = load_model(r'app\dash-template\assets\ae4')
+encodings = joblib.load(r'app\dash_template\assets\encoded_data.joblib')
+knn = joblib.load(r'app\dash_template\assets\knn.joblib')
+model = load_model(r'app\dash_template\assets\ae4')
 
 
 def recommend(index: int, n: int=5):
