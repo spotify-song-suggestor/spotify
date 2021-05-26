@@ -10,6 +10,7 @@ from tensorflow.keras.models import load_model
 import numpy as np
 from app import db, server, app
 from models import spotify
+import joblib
 
 encodings = joblib.load(r'assets/encoded_data.joblib')
 knn = joblib.load(r'assets/knn.joblib')
