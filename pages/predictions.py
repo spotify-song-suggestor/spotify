@@ -6,8 +6,11 @@ from dash.dependencies import Input, Output
 import plotly.graph_objs as go
 import matplotlib.pyplot as plt
 from plotly.tools import mpl_to_plotly
-
 from app import app
+
+encodings = joblib.load(r'assets/encoded_data.joblib')
+knn = joblib.load(r'assets/knn.joblib')
+model = load_model(r'assets/ae4')
 
 column1 = dbc.Col(
     [
@@ -140,7 +143,6 @@ column1 = dbc.Col(
         html.Br(),
         html.Br(),
         html.Br(),
-
     ],
     md=4,
 )
