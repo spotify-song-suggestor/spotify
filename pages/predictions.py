@@ -6,11 +6,33 @@ from dash.dependencies import Input, Output
 import plotly.graph_objs as go
 import matplotlib.pyplot as plt
 from plotly.tools import mpl_to_plotly
-from app import app
+from tensorflow.keras.models import load_model
+import numpy as np
+from app import db, server, app
+from models import spotify
 
 encodings = joblib.load(r'assets/encoded_data.joblib')
 knn = joblib.load(r'assets/knn.joblib')
 model = load_model(r'assets/ae4')
+
+def recommend(index: int, n: int=5) -> 'tuple[np.ndarray]':
+    '''
+    ### Parameters
+    index: index of song
+    n: number of recommendations to pull
+
+    returns: (dist, ind), array of distances, array of indeces for recommended songs. Includes
+    original song.
+    '''
+    return knn.kneighbors([encodings[index]], n_neighbors=5)
+
+
+def get_songs(indeces: 'list[int]') -> list:
+    '''
+    Uses SQLAlchemy queries to return track data from their indeces
+    '''
+    data = [spotify.query.filter(spotify.id == x).one() for x in indeces]
+    return data
 
 column1 = dbc.Col(
     [
