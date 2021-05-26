@@ -17,6 +17,7 @@ dash = "*"
 dash-bootstrap-components = "*"
 tensorflow = "*"
 sklearn = "*"
+flask-sqlalchemy = "*"
 
 [dev-packages]
 
