@@ -11,9 +11,9 @@ from app import db, server, app
 from models import spotify
 import matplotlib.pyplot as plt
 
-encodings = joblib.load(r'assets\encoded_data.joblib')
-knn = joblib.load(r'assets\knn.joblib')
-model = load_model(r'assets\ae4')
+encodings = joblib.load(r'assets/encoded_data.joblib')
+knn = joblib.load(r'assets/knn.joblib')
+model = load_model(r'assets/ae4')
 
 
 
@@ -45,6 +45,7 @@ column1 = dbc.Col(
         ),
         # toy tests with no meaning other than seeing what works
         F"{get_songs([0, 0])}"
+        
     ],
     md=4
 )

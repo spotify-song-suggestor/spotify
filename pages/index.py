@@ -37,8 +37,16 @@ fig = px.scatter(gapminder.query("year==2007"), x="gdpPercap", y="lifeExp", size
 
 column2 = dbc.Col(
     [
-        dcc.Graph(figure=fig),
+        #dcc.Graph(figure=fig),
+        
     ]
 )
 
-layout = dbc.Row([column1, column2])
+column3 = dbc.Col(
+    [
+        #dcc.Graph(figure=fig),
+        html.Div(html.Img(src=app.get_asset_url('cloud.png')), style={'height':'100%', 'width':'100%'})
+    ]
+)
+
+layout = dbc.Row([column1, column2, column3])
