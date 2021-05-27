@@ -19,18 +19,6 @@ encodings = joblib.load(r'assets/encoded_data.joblib')
 knn = joblib.load(r'assets/knn.joblib')
 model = load_model(r'assets/ae4')
 
-def recommend(index: int, n: int=5) -> 'tuple[np.ndarray]':
-    '''
-    ### Parameters
-    index: index of song
-    n: number of recommendations to pull
-
-    returns: (dist, ind), array of distances, array of indeces for recommended songs. Includes
-    original song.
-    '''
-    return knn.kneighbors([encodings[index]], n_neighbors=5)
-
-
 def get_songs(indeces: 'list[int]') -> 'list[spotify]':
     '''
     Uses SQLAlchemy queries to return track data from their indeces
@@ -40,6 +28,10 @@ def get_songs(indeces: 'list[int]') -> 'list[spotify]':
 
 
 def plot_graph(data:list):
+    '''Function to plot bar graph
+       Input: Data objects returned by get_song()
+       Output: Plotly Bar Graph
+    '''   
     g_name = [(x.name) for x in data]
     g_popularity = [(x.popularity) for x in data]
     g_artist = [(x.artists) for x in data]
@@ -96,27 +88,6 @@ def get_songs_via_features(features: list, n_songs: int=5) -> 'tuple[np.ndarray]
     return knn([vec], n_songs)
 
 
-
-
-@app.callback(
-    Input('duration', 'value'),
-    Input('explicit', 'value'),
-    Input('release_date', 'value'),
-    Input('danceability', 'value'),
-    Input('energy', 'value'),
-    Input('key', 'value'),
-    Input('loudness', 'value'),
-    Input('mode', 'value'),
-    Input('speechiness', 'value'),
-    Input('acousticness', 'value'),
-    Input('instrumentalness', 'value'),
-    Input('liveness', 'value'),
-    Input('valence', 'value'),
-    Input('tempo', 'value'),
-    Input('time_signature', 'value'),
-    Input('popularity', 'value'),
-    Output('prediction-text1', 'children')
-)
 def update_list(duration_ms,
                 explicit,
                 release_date,
@@ -140,143 +111,170 @@ def update_list(duration_ms,
     # be great
     pass
 
+
+
 # 2 column layout. 1st column width = 4/12
 # https://dash-bootstrap-components.opensource.faculty.ai/l/components/layout
 
 # TODO: These values must match the input range for the model, meaning between
 # 0 and 1. There also must be the complete set of features the model uses, as
 # described above.
-column1 = dbc.Col(
+column2 = dbc.Col(
     [
-        html.Br(),
-        html.Br(),
-        html.H6('Duration'),
+        dcc.Markdown('''###### Duration'''),
         dcc.Slider(
-            id='duration',
-            min=90,
-            max=100,
-            value=45,
-            step=.1,
-            #             marks={i:str(i) for i in range(90,101)},
+            id='duration-slider',
+            min=0,
+            max=1,
+            value=0.5,
+            step=0.1,
         ),
-        html.H6('Explicit'),
+        dcc.Markdown('', id='duration-slider-container'),
+
+        dcc.Markdown('''###### Explicit'''),
         dcc.Slider(
-            id='explicit',
+            id='explicit-slider',
             min=0,
             max=1,
             step=1,
             value=0,
-            #             marks={i:str(i) for i in range(1,11)},
-
         ),
-        html.H6('Loudness'),
+        dcc.Markdown('', id='explicit-slider-container'),
+
+        dcc.Markdown('''###### Danceability'''),
         dcc.Slider(
-            id='slider-3',
-            min=.01,
+            id='danceability-slider',
+            min=0,
             max=1,
-            step=.01,
-            value=.5,
-            #             marks={i:str(i) for i in range(1,11)},
-
+            step=0.1,
+            value=0.5,
         ),
-        html.H6('Danceability'),
+        dcc.Markdown('', id='danceability-slider-container'),
+
+        dcc.Markdown('''###### Energy'''),
         dcc.Slider(
-            id='slider-4',
-            min=0.01,
+            id='energy-slider',
+            min=0,
             max=1,
-            step=0.01,
-            value=.5,
-            #             marks={i:str(i) for i in range(0,2)},
-
+            step=0.1,
+            value=0.5,
         ),
-        html.H6('Accousticness'),
-        dcc.Slider(
-            id='slider-5',
-            min=0.01,
-            max=38,
-            step=0.01,
-            value=19,
-            #             marks={i:str(i) for i in range(0,39)},
+        dcc.Markdown('', id='energy-slider-container'),
 
-        ),
-        html.H6('Energy'),
+        dcc.Markdown('''###### Key'''),
         dcc.Slider(
-            id='slider-6',
-            min=0.01,
+            id='key-slider',
+            min=0,
             max=1,
-            step=0.01,
-            value=.5,
-            #             marks={i:str(i) for i in range(1,11)},
-
+            step=0.1,
+            value=0.5,
         ),
-        html.H6('Instrumentalness'),
+        dcc.Markdown('', id='key-slider-container'),
+
+        dcc.Markdown('''###### Loudness'''),
         dcc.Slider(
-            id='slider-7',
-            min=0.01,
+            id='loudness-slider',
+            min=0,
             max=1,
-            step=0.01,
-            value=.5,
-            #             marks={i:str(i) for i in range(0,1)},
-
+            step=0.1,
+            value=0.5,
         ),
-        
+        dcc.Markdown('', id='loudness-slider-container'),        
 
-        html.H6('Liveness'),
+        dcc.Markdown('''###### Mode'''),
         dcc.Slider(
-            id='slider-8',
-            min=0.01,
+            id='mode-slider',
+            min=0,
             max=1,
-            step=0.01,
-            value=.5,
-            #             marks={i:str(i) for i in range(1,9)},
-
-        ),
-        html.H6('Popularity'),
-        dcc.Slider(
-            id='slider-9',
-            min=0.01,
-            max=1,
-            step=0.01,
-            value=.5,
-            #             marks={i:str(i) for i in range(1,9)},
-
-        ),
-        html.H6('Speechiness'),
-        dcc.Slider(
-            id='slider-10',
-            min=0.1,
-            max=1,
-            step=0.01,
-            value=.5,
-            #             marks={i:str(i) for i in range(1,9)},
-
-        ),
-        html.H6('Tempo'),
-        dcc.Slider(
-            id='slider-11',
-            min=60,
-            max=240,
-            step=5,
-            value=92,
-            marks={i: str(i) for i in range(60, 241, 20)},
-
-        ),
-        html.Br(),
-        html.Br(),
-        html.H6('Release_date'),
-        dcc.Slider(
-            id='slider-0',
-            min=1960,
-            max=2020,
             step=1,
-            value=1990,
-            marks={i: str(i) for i in range(1960, 2021, 10)},
-
+            value=0.5,
         ),
+        dcc.Markdown('', id='mode-slider-container'),
 
-        html.Br(),
-        html.Br(),
-        html.Br(),
+        dcc.Markdown('''###### Speechiness'''),
+        dcc.Slider(
+            id='speechiness-slider',
+            min=0,
+            max=1,
+            step=0.1,
+            value=0.5,
+        ),
+        dcc.Markdown('', id='speechiness-slider-container'),
+
+        dcc.Markdown('''###### Acousticness'''),
+        dcc.Slider(
+            id='acousticness-slider',
+            min=0,
+            max=1,
+            step=0.1,
+            value=0.5,
+        ),
+        dcc.Markdown('', id='acousticness-slider-container'),
+
+        dcc.Markdown('''###### Instrumentalness'''),
+        dcc.Slider(
+            id='instrumentalness-slider',
+            min=0,
+            max=1,
+            step=0.1,
+            value=0.5,
+        ),
+        dcc.Markdown('', id='instrumentalness-slider-container'),
+
+        dcc.Markdown('''###### Liveness'''),
+        dcc.Slider(
+            id='liveness-slider',
+            min=0,
+            max=1,
+            step=0.1,
+            value=0.5,
+        ),
+        dcc.Markdown('', id='liveness-slider-container'),
+
+        dcc.Markdown('''###### Valence'''),
+        dcc.Slider(
+            id='valence-slider',
+            min=0,
+            max=1,
+            step=0.1,
+            value=0.5,
+        ),
+        dcc.Markdown('', id='valence-slider-container'),
+
+        dcc.Markdown('''###### Tempo'''),
+        dcc.Slider(
+            id='tempo-slider',
+            min=0,
+            max=1,
+            step=0.1,
+            value=0.5,
+        ),
+        dcc.Markdown('', id='tempo-slider-container'),
+
+        dcc.Markdown('''###### Time Signature'''),
+        dcc.Slider(
+            id='time-signature-slider',
+            min=0,
+            max=1,
+            step=0.1,
+            value=0.5,
+        ),
+        dcc.Markdown('', id='time-signature-slider-container'),
+
+        dcc.Markdown('''######  Popularity'''),
+        dcc.Slider(
+            id='popularity-slider',
+            min=0,
+            max=1,
+            step=0.1,
+            value=0.5,
+        ),
+        dcc.Markdown('', id='popularity-slider-container'),
+
+        # Container to display recommendations
+        dcc.Markdown('',id='recommendation-content', style={
+        'textAlign':'center',
+        'font-size':30})
 
     ],
     md=4,
@@ -284,30 +282,8 @@ column1 = dbc.Col(
 
 
 
-column2 = dbc.Col(
-    [html.Br(),
-     html.Div(id='prediction-text1', children='output will go here', style={'color': 'green', 'fontSize': 16}),
-     html.Br(),
-     html.Div(id='prediction-text2', children='output will go here', style={'fontSize': 16}),
-     html.Br(),
-     html.Div(id='prediction-text3', children='output will go here', style={'color': 'green', 'fontSize': 16}),
-     html.Div(id='prediction-text4', children='output will go here', style={'color': 'green', 'fontSize': 16}),
-     html.Div(id='prediction-text5', children='output will go here', style={'color': 'green', 'fontSize': 16}),
-     html.Br(),
-     html.Div(id='prediction-text6', children='output will go here', style={'fontSize': 16}),
-     html.Div(id='prediction-text7', children='output will go here', style={'color': 'green', 'fontSize': 16}),
-
-     ],
-    md=3,
-
-)
-
-column3 = dbc.Col(
+column1 = dbc.Col(
     [
-
-        #Sanity Test
-        dcc.Graph(figure=plot_graph(data=get_songs([0,6,1609,34455]))),
-        # html.Div(id='prediction-text',children='output will go here'), 
         dcc.Markdown(
             """
 
@@ -327,6 +303,18 @@ column3 = dbc.Col(
             * **Year of Release** - Year the track was released 
             """
         ),
+
+     ],
+    md=3,
+
+)
+
+column3 = dbc.Col(
+    [
+        #Sanity Test
+        dcc.Graph(figure=plot_graph(data=get_songs([0,6,1609,34455]))),
+        
+        # html.Div(id='prediction-text',children='output will go here'), 
         # html.Div(id='shapley',children='output will go here'),
         # dcc.Graph(id='my-graph-name', figure=plotly_figure)
 
@@ -334,5 +322,131 @@ column3 = dbc.Col(
     ]
 
 )
+# Takes inputs from user and returning to show their selection
+@app.callback(
+    dash.dependencies.Output('duration-slider-container', 'children'),
+    [dash.dependencies.Input('duration-slider', 'value')])
+def update_output(value):
+    return 'Duration = "{}"'.format(value)
 
-layout = dbc.Row([column1, column2, column3])     
+@app.callback(
+    dash.dependencies.Output('explicit-slider-container', 'children'),
+    [dash.dependencies.Input('explicit-slider', 'value')])
+def update_output(value):
+    return 'Explicit = "{}"'.format(value)
+
+@app.callback(
+    dash.dependencies.Output('danceability-slider-container', 'children'),
+    [dash.dependencies.Input('danceability-slider', 'value')])
+def update_output(value):
+    return 'Danceability = "{}"'.format(value)
+
+@app.callback(
+    dash.dependencies.Output('energy-slider-container', 'children'),
+    [dash.dependencies.Input('energy-slider', 'value')])
+def update_output(value):
+    return 'Energy = "{}"'.format(value)
+
+@app.callback(
+    dash.dependencies.Output('key-slider-container', 'children'),
+    [dash.dependencies.Input('key-slider', 'value')])
+def update_output(value):
+    return 'Key = "{}"'.format(value)
+
+@app.callback(
+    dash.dependencies.Output('loudness-slider-container', 'children'),
+    [dash.dependencies.Input('loudness-slider', 'value')])
+def update_output(value):
+    return 'Loudness = "{}"'.format(value)
+
+@app.callback(
+    dash.dependencies.Output('mode-slider-container', 'children'),
+    [dash.dependencies.Input('mode-slider', 'value')])
+def update_output(value):
+    return 'Mode = "{}"'.format(value)
+
+@app.callback(
+    dash.dependencies.Output('speechiness-slider-container', 'children'),
+    [dash.dependencies.Input('speechiness-slider', 'value')])
+def update_output(value):
+    return 'Speechiness = "{}"'.format(value)
+
+@app.callback(
+    dash.dependencies.Output('acousticness-slider-container', 'children'),
+    [dash.dependencies.Input('acousticness-slider', 'value')])
+def update_output(value):
+    return 'Acousticness = "{}"'.format(value)
+
+@app.callback(
+    dash.dependencies.Output('instrumentalness-slider-container', 'children'),
+    [dash.dependencies.Input('instrumentalness-slider', 'value')])
+def update_output(value):
+    return 'Instrumentalness = "{}"'.format(value)
+
+@app.callback(
+    dash.dependencies.Output('liveness-slider-container', 'children'),
+    [dash.dependencies.Input('liveness-slider', 'value')])
+def update_output(value):
+    return 'Liveness = "{}"'.format(value)
+
+@app.callback(
+    dash.dependencies.Output('valence-slider-container', 'children'),
+    [dash.dependencies.Input('valence-slider', 'value')])
+def update_output(value):
+    return 'Valence = "{}"'.format(value)
+
+@app.callback(
+    dash.dependencies.Output('tempo-slider-container', 'children'),
+    [dash.dependencies.Input('tempo-slider', 'value')])
+def update_output(value):
+    return 'Tempo = "{}"'.format(value)
+
+@app.callback(
+    dash.dependencies.Output('time-signature-slider-container', 'children'),
+    [dash.dependencies.Input('time-signature-slider', 'value')])
+def update_output(value):
+    return 'Time Signature = "{}"'.format(value)
+
+@app.callback(
+    dash.dependencies.Output('popularity-slider-container', 'children'),
+    [dash.dependencies.Input('popularity-slider', 'value')])
+def update_output(value):
+    return 'Popularity = "{}"'.format(value)
+
+# Uses the inputs to the user to generate the recommendation
+@app.callback(
+    Output('recommendation-content', 'children'),
+    [
+        Input('duration', 'value'),
+        Input('explicit', 'value'),
+        Input('danceability', 'value'),
+        Input('energy', 'value'),
+        Input('key', 'value'),
+        Input('loudness', 'value'),
+        Input('mode', 'value'),
+        Input('speechiness', 'value'),
+        Input('acousticness', 'value'),
+        Input('instrumentalness', 'value'),
+        Input('liveness', 'value'),
+        Input('valence', 'value'),
+        Input('tempo', 'value'),
+        Input('time_signature', 'value'),
+        Input('popularity', 'value'),
+        ])
+
+def recommend(index: int, n: int=5) -> 'tuple[np.ndarray]':
+    '''
+    ### Parameters
+    index: index of song
+    n: number of recommendations to pull
+
+    returns: (dist, ind), array of distances, array of indeces for recommended songs. Includes
+    original song.
+    '''
+    return knn.kneighbors([encodings[index]], n_neighbors=5)
+
+
+
+
+
+layout = dbc.Row([column1,column2,column3])     
