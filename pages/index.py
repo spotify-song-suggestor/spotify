@@ -15,12 +15,12 @@ column1 = dbc.Col(
     [
         dcc.Markdown(
             """
-        
+
             ## What shall you listen to?
 
             This app will help you select what to listen next. Be impressed!
 
-            
+
             From over a hundred thousand song's to select from. This running app with a sophisticated deep neural net machine will let you discover new favorite songs!
 
 

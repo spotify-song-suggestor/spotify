@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 from plotly.tools import mpl_to_plotly
 from tensorflow.keras.models import load_model
 import numpy as np
-from tensorflow.python.training.tracking.util import list_objects
 from app import db, server, app
 from models import spotify
 import matplotlib.pyplot as plt
@@ -32,7 +31,7 @@ def recommend(index: int, n: int=5) -> 'tuple[np.ndarray]':
     return knn.kneighbors([encodings[index]], n_neighbors=5)
 
 
-def get_songs(indeces: 'list[int]') -> list:
+def get_songs(indeces: 'list[int]') -> 'list[spotify]':
     '''
     Uses SQLAlchemy queries to return track data from their indeces
     '''
@@ -52,8 +51,8 @@ def plot_graph(data:list):
     g_acousticness = [(x.acousticness) for x in data]
     g_instrumentalness = [(x.instrumentalness) for x in data]
     fig = px.bar(data, x= g_name, y= g_popularity,
-                hover_data=[g_artist,g_release_date,
-                g_valence,g_danceability,g_energy],
+                hover_data=[g_artist, g_release_date,
+                            g_valence, g_danceability, g_energy],
                 color=g_popularity,
                 labels={'x':'Song Name','y': 'Popularity',
                         'hover_data_0': 'Artist',
@@ -64,28 +63,105 @@ def plot_graph(data:list):
 
     return fig
 
+# TODO: Test this function
+def get_songs_via_features(features: list, n_songs: int=5) -> 'tuple[np.ndarray]':
+    '''
+    Converts input into the model's encoding, then runs it through the
+    K-NearestNeighbors models
+    Returns: 
+
+    ### Parameters
+    features: A list of all features required to run the model.
+    The model encoder expects these inputs in this order:
+    duration_ms,
+    explicit,
+    release_date,
+    danceability,
+    energy,
+    key,
+    loudness,
+    mode,
+    speechiness,
+    acousticness,
+    instrumentalness,
+    liveness,
+    valence,
+    tempo,
+    time_signature,
+    popularity
+
+    n_songs: number of songs to return.
+    '''
+    vec = model.encoder(np.array(features))
+    return knn([vec], n_songs)
+
+
+
+
+@app.callback(
+    Input('duration', 'value'),
+    Input('explicit', 'value'),
+    Input('release_date', 'value'),
+    Input('danceability', 'value'),
+    Input('energy', 'value'),
+    Input('key', 'value'),
+    Input('loudness', 'value'),
+    Input('mode', 'value'),
+    Input('speechiness', 'value'),
+    Input('acousticness', 'value'),
+    Input('instrumentalness', 'value'),
+    Input('liveness', 'value'),
+    Input('valence', 'value'),
+    Input('tempo', 'value'),
+    Input('time_signature', 'value'),
+    Input('popularity', 'value'),
+    Output('prediction-text1', 'children')
+)
+def update_list(duration_ms,
+                explicit,
+                release_date,
+                danceability,
+                energy,
+                key,
+                loudness,
+                mode,
+                speechiness,
+                acousticness,
+                instrumentalness,
+                liveness,
+                valence,
+                tempo,
+                time_signature,
+                popularity):
+    # TODO: Write this function
+    # Utilize get_songs_via_features to grab songs to display for user to pick
+    # from. Route those songs via clicks to get recommendations for those songs.
+    # This is just one method of doing this, discussion surrounding this would
+    # be great
+    pass
 
 # 2 column layout. 1st column width = 4/12
 # https://dash-bootstrap-components.opensource.faculty.ai/l/components/layout
 
+# TODO: These values must match the input range for the model, meaning between
+# 0 and 1. There also must be the complete set of features the model uses, as
+# described above.
 column1 = dbc.Col(
     [
-
         html.Br(),
         html.Br(),
         html.H6('Duration'),
         dcc.Slider(
-            id='slider-1',
+            id='duration',
             min=90,
             max=100,
             value=45,
             step=.1,
             #             marks={i:str(i) for i in range(90,101)},
-
         ),
         html.H6('Explicit'),
         dcc.Slider(
-            id='slider-2',
+            id='explicit',
             min=0,
             max=1,
             step=1,
@@ -143,9 +219,6 @@ column1 = dbc.Col(
             #             marks={i:str(i) for i in range(0,1)},
 
         ),
-
-        # toy tests with no meaning other than seeing what works
-        F"{get_songs([0, 1,2,3])}"
         
 
         html.H6('Liveness'),
@@ -233,9 +306,7 @@ column3 = dbc.Col(
     [
 
         #Sanity Test
-        dcc.Graph(figure=plot_graph(data=get_songs([0,6,1609,34455])))
-       
-
+        dcc.Graph(figure=plot_graph(data=get_songs([0,6,1609,34455]))),
         # html.Div(id='prediction-text',children='output will go here'), 
         dcc.Markdown(
             """
