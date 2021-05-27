@@ -8,9 +8,13 @@ import matplotlib.pyplot as plt
 from plotly.tools import mpl_to_plotly
 from tensorflow.keras.models import load_model
 import numpy as np
+from tensorflow.python.training.tracking.util import list_objects
 from app import db, server, app
 from models import spotify
+import matplotlib.pyplot as plt
+import plotly.express as px
 import joblib
+
 
 encodings = joblib.load(r'assets/encoded_data.joblib')
 knn = joblib.load(r'assets/knn.joblib')
@@ -34,6 +38,35 @@ def get_songs(indeces: 'list[int]') -> list:
     '''
     data = [spotify.query.filter(spotify.id == x).one() for x in indeces]
     return data
+
+
+def plot_graph(data:list):
+    g_name = [(x.name) for x in data]
+    g_popularity = [(x.popularity) for x in data]
+    g_artist = [(x.artists) for x in data]
+    g_release_date = [(x.release_date) for x in data]
+    g_valence = [(x.valence) for x in data]
+    g_danceability = [(x.danceability) for x in data]
+    g_energy = [(x.energy) for x in data]
+    g_speechiness = [(x.speechiness) for x in data]
+    g_acousticness = [(x.acousticness) for x in data]
+    g_instrumentalness = [(x.instrumentalness) for x in data]
+    fig = px.bar(data, x= g_name, y= g_popularity,
+                hover_data=[g_artist,g_release_date,
+                g_valence,g_danceability,g_energy],
+                color=g_popularity,
+                labels={'x':'Song Name','y': 'Popularity',
+                        'hover_data_0': 'Artist',
+                        'hover_data_1': 'Release Date',
+                        'hover_data_2': 'Valence',
+                        'hover_data_3': 'Danceability',
+                        'hover_data_4': 'Energy'})
+
+    return fig
+
+
+# 2 column layout. 1st column width = 4/12
+# https://dash-bootstrap-components.opensource.faculty.ai/l/components/layout
 
 column1 = dbc.Col(
     [
@@ -110,6 +143,11 @@ column1 = dbc.Col(
             #             marks={i:str(i) for i in range(0,1)},
 
         ),
+
+        # toy tests with no meaning other than seeing what works
+        F"{get_songs([0, 1,2,3])}"
+        
+
         html.H6('Liveness'),
         dcc.Slider(
             id='slider-8',
@@ -166,6 +204,7 @@ column1 = dbc.Col(
         html.Br(),
         html.Br(),
         html.Br(),
+
     ],
     md=4,
 )
@@ -192,6 +231,11 @@ column2 = dbc.Col(
 
 column3 = dbc.Col(
     [
+
+        #Sanity Test
+        dcc.Graph(figure=plot_graph(data=get_songs([0,6,1609,34455])))
+       
+
         # html.Div(id='prediction-text',children='output will go here'), 
         dcc.Markdown(
             """
@@ -214,6 +258,7 @@ column3 = dbc.Col(
         ),
         # html.Div(id='shapley',children='output will go here'),
         # dcc.Graph(id='my-graph-name', figure=plotly_figure)
+
 
     ]
 
