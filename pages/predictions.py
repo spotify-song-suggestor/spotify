@@ -23,8 +23,22 @@ def get_songs(indeces: 'list[int]') -> 'list[spotify]':
     '''
     Uses SQLAlchemy queries to return track data from their indeces
     '''
+    print('indeces:',indeces)
     data = [spotify.query.filter(spotify.id == x).one() for x in indeces]
+    print('Data:',data)
     return data
+
+
+def recommend(index: int, n: int=5) -> 'tuple[np.ndarray]':
+    '''
+    ### Parameters
+    index: index of song
+    n: number of recommendations to pull
+
+    returns: (dist, ind), array of distances, array of indeces for recommended songs. Includes
+    original song.
+    '''
+    return knn.kneighbors([encodings[index]], n_neighbors=5)
 
 
 def plot_graph(data:list):
@@ -56,7 +70,7 @@ def plot_graph(data:list):
     return fig
 
 # TODO: Test this function
-def get_songs_via_features(features: list, n_songs: int=5) -> 'tuple[np.ndarray]':
+def get_songs_via_features(features: list, n_songs: int=5) -> 'list[int]':
     '''
     Converts input into the model's encoding, then runs it through the
     K-NearestNeighbors models
@@ -67,7 +81,6 @@ def get_songs_via_features(features: list, n_songs: int=5) -> 'tuple[np.ndarray]
     The model encoder expects these inputs in this order:
     duration_ms,
     explicit,
-    release_date,
     danceability,
     energy,
     key,
@@ -84,32 +97,12 @@ def get_songs_via_features(features: list, n_songs: int=5) -> 'tuple[np.ndarray]
 
     n_songs: number of songs to return.
     '''
-    vec = model.encoder(np.array(features))
-    return knn([vec], n_songs)
-
-
-def update_list(duration_ms,
-                explicit,
-                release_date,
-                danceability,
-                energy,
-                key,
-                loudness,
-                mode,
-                speechiness,
-                acousticness,
-                instrumentalness,
-                liveness,
-                valence,
-                tempo,
-                time_signature,
-                popularity):
-    # TODO: Write this function
-    # Utilize get_songs_via_features to grab songs to display for user to pick
-    # from. Route those songs via clicks to get recommendations for those songs.
-    # This is just one method of doing this, discussion surrounding this would
-    # be great
-    pass
+    vec = model.encoder(np.array(features).reshape(1, -1))
+    print('vec:',vec)
+    _, indeces = knn.kneighbors(vec, n_songs)
+    indeces = indeces.reshape(-1).tolist()
+    print('reshaped indeces in get_songs_via_features: ', indeces)
+    return indeces
 
 
 
@@ -272,7 +265,7 @@ column2 = dbc.Col(
         dcc.Markdown('', id='popularity-slider-container'),
 
         # Container to display recommendations
-        dcc.Markdown('',id='recommendation-content', style={
+        dcc.Markdown('', id='recommendation-content', style={
         'textAlign':'center',
         'font-size':30})
 
@@ -417,33 +410,64 @@ def update_output(value):
 @app.callback(
     Output('recommendation-content', 'children'),
     [
-        Input('duration', 'value'),
-        Input('explicit', 'value'),
-        Input('danceability', 'value'),
-        Input('energy', 'value'),
-        Input('key', 'value'),
-        Input('loudness', 'value'),
-        Input('mode', 'value'),
-        Input('speechiness', 'value'),
-        Input('acousticness', 'value'),
-        Input('instrumentalness', 'value'),
-        Input('liveness', 'value'),
-        Input('valence', 'value'),
-        Input('tempo', 'value'),
-        Input('time_signature', 'value'),
-        Input('popularity', 'value'),
-        ])
+        Input('duration-slider', 'value'),
+        Input('explicit-slider', 'value'),
+        Input('danceability-slider', 'value'),
+        Input('energy-slider', 'value'),
+        Input('key-slider', 'value'),
+        Input('loudness-slider', 'value'),
+        Input('mode-slider', 'value'),
+        Input('speechiness-slider', 'value'),
+        Input('acousticness-slider', 'value'),
+        Input('instrumentalness-slider', 'value'),
+        Input('liveness-slider', 'value'),
+        Input('valence-slider', 'value'),
+        Input('tempo-slider', 'value'),
+        Input('time-signature-slider', 'value'),
+        Input('popularity-slider', 'value')])
+def update_list(duration_ms,
+                explicit,
+                danceability,
+                energy,
+                key,
+                loudness,
+                mode,
+                speechiness,
+                acousticness,
+                instrumentalness,
+                liveness,
+                valence,
+                tempo,
+                time_signature,
+                popularity):
+    # TODO: Write this function
+    # Utilize get_songs_via_features to grab songs to display for user to pick
+    # from. Route those songs via clicks to get recommendations for those songs.
+    # This is just one method of doing this, discussion surrounding this would
+    # be great
+    features = [duration_ms,
+                explicit,
+                danceability,
+                energy,
+                key,
+                loudness,
+                mode,
+                speechiness,
+                acousticness,
+                instrumentalness,
+                liveness,
+                valence,
+                tempo,
+                time_signature,
+                popularity]
 
-def recommend(index: int, n: int=5) -> 'tuple[np.ndarray]':
-    '''
-    ### Parameters
-    index: index of song
-    n: number of recommendations to pull
+    indeces = get_songs_via_features(features)
+    print('update_list indeces: ', indeces)
+    songs = get_songs(indeces)
+    print('update_list songs:', songs)
+    return [x.name for x in songs]
 
-    returns: (dist, ind), array of distances, array of indeces for recommended songs. Includes
-    original song.
-    '''
-    return knn.kneighbors([encodings[index]], n_neighbors=5)
+
 
 
 
