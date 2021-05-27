@@ -17,7 +17,6 @@ column1 = dbc.Col(
         
             ## Process
 
-
             """
         ),
 
