@@ -2,7 +2,8 @@ import dash
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output
+from dash.exceptions import PreventUpdate
+from dash.dependencies import Input, Output, State
 from dash_table import DataTable
 import plotly.graph_objs as go
 import matplotlib.pyplot as plt
@@ -14,6 +15,7 @@ from models import spotify
 import matplotlib.pyplot as plt
 import plotly.express as px
 import joblib
+import re
 
 
 encodings = joblib.load(r'assets/encoded_data.joblib')
@@ -24,9 +26,9 @@ def get_songs(indeces: 'list[int]') -> 'list[spotify]':
     '''
     Uses SQLAlchemy queries to return track data from their indeces
     '''
-    print('indeces:',indeces)
+    print('get_songs indeces:', indeces)
     data = [spotify.query.filter(spotify.id == x).one() for x in indeces]
-    print('Data:', data)
+    print('getsongs Data:', data)
     return data
 
 
@@ -206,7 +208,6 @@ row1 = dbc.Row(
             * **Year of Release** - Year the track was released 
             """
         ),
-
      ],
     
 
@@ -365,10 +366,46 @@ def update_list(duration_ms,
     print('update_list songs:', songs)
     return [song.id for song in songs]
 
+
+
+@app.callback(
+    Output('dropdown', 'options'),
+    Input('dropdown', 'search_value'))
+def update_dropdown(search_value):
+    if not search_value:
+        raise PreventUpdate
+    songs = spotify.query.filter(spotify.name == search_value).limit(10).all() or []
+    print('update_dropdone songs:', type(songs))
+    songs.extend(spotify.query.filter(spotify.name.startswith(search_value) == True).limit(25).all())
+    options = []
+    for song in songs:
+        options.append({"label": song.name if not None else ' ', "value": song.id})
+    print('update_options options: ', options)
+    return options
+
+@app.callback(
+    Output('dropdown-recommendations', 'children'),
+    Input('dropdown', 'value'))
+def update_drop_recs(id=0):
+    print('update_drop_recs id', id)
+    _, rec_ids = recommend(id)
+    print('update_drop_recs rec_ids:', rec_ids.tolist()[0])
+
+    recommendations = get_songs(rec_ids.tolist()[0])
+    print('update_drop_recs recommendations:', recommendations)
+    print(recommendations[0].artists)
+    return [song.name + ' by ' + re.sub('[^a-zA-Z 0-9]', '', ''.join(song.artists)) + '\n' for song in recommendations] or " "
+
+
 rec_col = dbc.Col(
     [
         
         # Container to display recommendations
+        dcc.Dropdown(id='dropdown', value=0),
+        dcc.Markdown('#### Recommended Songs From Dropdown:', style={'textAlign': 'center'}),
+        dcc.Markdown('', id='dropdown-recommendations', style={
+        'textAlign':'center',
+        'font-size':20}),
         dcc.Markdown('#### Recommended Songs:', style={'textAlign': 'center'}),
         dcc.Markdown('', id='recommendation-content', style={
         'textAlign':'center',
@@ -376,7 +413,7 @@ rec_col = dbc.Col(
         #Sanity Test
         #dcc.Graph(figure=plot_graph(data=get_songs([0,6,1609,34455]))),
         dcc.Graph(id = 'my-graph', style={"height": "50%", "width" : "80%", "align": "center", "margin": "auto"}),
-        dcc.Store(id='memory')
+        dcc.Store(id='memory'),
     ]
 )
 column3 = dbc.Col([
@@ -463,6 +500,8 @@ column3 = dbc.Col([
     md=3,
 )
 
+
+
 @app.callback(
              Output('my-graph', 'figure'),
              Input('memory', 'data'))
@@ -477,4 +516,4 @@ def update_recommended(data):
     return [song.name + '\n' for song in get_songs(data)]
 
 
-layout = [dbc.Row([column3, column2,rec_col]), dbc.Row(row1)]
+layout = [dbc.Row([column3, column2, rec_col]), dbc.Row(row1)]
