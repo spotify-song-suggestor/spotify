@@ -185,12 +185,10 @@ column2 = dbc.Col(
         
 
     ],
-    md=4,
+    
 )
 
-
-
-column1 = dbc.Col(
+row1 = dbc.Row(
     [
         dcc.Markdown(
             """
@@ -210,7 +208,7 @@ column1 = dbc.Col(
         ),
 
      ],
-    md=3,
+    
 
 )
 
@@ -367,17 +365,17 @@ def update_list(duration_ms,
     print('update_list songs:', songs)
     return [song.id for song in songs]
 
-row1 = dbc.Row(
+rec_col = dbc.Col(
     [
         
         # Container to display recommendations
-        dcc.Markdown('## Recommended Songs:', style={'textAlign': 'center'}),
+        dcc.Markdown('#### Recommended Songs:', style={'textAlign': 'center'}),
         dcc.Markdown('', id='recommendation-content', style={
         'textAlign':'center',
-        'font-size':30}),
+        'font-size':20}),
         #Sanity Test
         #dcc.Graph(figure=plot_graph(data=get_songs([0,6,1609,34455]))),
-        dcc.Graph(id = 'my-graph', style={"height": "80vh", "width" : "80vw", "align": "center", "margin": "auto"}),
+        dcc.Graph(id = 'my-graph', style={"height": "50%", "width" : "80%", "align": "center", "margin": "auto"}),
         dcc.Store(id='memory')
     ]
 )
@@ -461,7 +459,9 @@ column3 = dbc.Col([
             value=0.5,
         ),
         dcc.Markdown('', id='popularity-slider-container'),
-])
+    ],
+    md=3,
+)
 
 @app.callback(
              Output('my-graph', 'figure'),
@@ -477,4 +477,4 @@ def update_recommended(data):
     return [song.name + '\n' for song in get_songs(data)]
 
 
-layout = [dbc.Row([column1, column3, column2]), dbc.Row(row1)]
+layout = [dbc.Row([column3, column2,rec_col]), dbc.Row(row1)]
