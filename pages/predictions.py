@@ -3,6 +3,7 @@ import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
+from dash_table import DataTable
 import plotly.graph_objs as go
 import matplotlib.pyplot as plt
 from plotly.tools import mpl_to_plotly
@@ -25,7 +26,7 @@ def get_songs(indeces: 'list[int]') -> 'list[spotify]':
     '''
     print('indeces:',indeces)
     data = [spotify.query.filter(spotify.id == x).one() for x in indeces]
-    print('Data:',data)
+    print('Data:', data)
     return data
 
 
@@ -41,7 +42,7 @@ def recommend(index: int, n: int=5) -> 'tuple[np.ndarray]':
     return knn.kneighbors([encodings[index]], n_neighbors=5)
 
 
-def plot_graph(data:list):
+def plot_graph(data: 'list[spotify]'):
     '''Function to plot bar graph
        Input: Data objects returned by get_song()
        Output: Plotly Bar Graph
@@ -56,7 +57,7 @@ def plot_graph(data:list):
     g_speechiness = [(x.speechiness) for x in data]
     g_acousticness = [(x.acousticness) for x in data]
     g_instrumentalness = [(x.instrumentalness) for x in data]
-    fig = px.bar(data, x= g_name, y= g_popularity,
+    fig = px.bar(x=g_name, y=g_popularity,
                 hover_data=[g_artist, g_release_date,
                             g_valence, g_danceability, g_energy],
                 color=g_popularity,
@@ -184,90 +185,7 @@ column2 = dbc.Col(
         ),
         dcc.Markdown('', id='mode-slider-container'),
 
-        dcc.Markdown('''###### Speechiness'''),
-        dcc.Slider(
-            id='speechiness-slider',
-            min=0,
-            max=1,
-            step=0.1,
-            value=0.5,
-        ),
-        dcc.Markdown('', id='speechiness-slider-container'),
-
-        dcc.Markdown('''###### Acousticness'''),
-        dcc.Slider(
-            id='acousticness-slider',
-            min=0,
-            max=1,
-            step=0.1,
-            value=0.5,
-        ),
-        dcc.Markdown('', id='acousticness-slider-container'),
-
-        dcc.Markdown('''###### Instrumentalness'''),
-        dcc.Slider(
-            id='instrumentalness-slider',
-            min=0,
-            max=1,
-            step=0.1,
-            value=0.5,
-        ),
-        dcc.Markdown('', id='instrumentalness-slider-container'),
-
-        dcc.Markdown('''###### Liveness'''),
-        dcc.Slider(
-            id='liveness-slider',
-            min=0,
-            max=1,
-            step=0.1,
-            value=0.5,
-        ),
-        dcc.Markdown('', id='liveness-slider-container'),
-
-        dcc.Markdown('''###### Valence'''),
-        dcc.Slider(
-            id='valence-slider',
-            min=0,
-            max=1,
-            step=0.1,
-            value=0.5,
-        ),
-        dcc.Markdown('', id='valence-slider-container'),
-
-        dcc.Markdown('''###### Tempo'''),
-        dcc.Slider(
-            id='tempo-slider',
-            min=0,
-            max=1,
-            step=0.1,
-            value=0.5,
-        ),
-        dcc.Markdown('', id='tempo-slider-container'),
-
-        dcc.Markdown('''###### Time Signature'''),
-        dcc.Slider(
-            id='time-signature-slider',
-            min=0,
-            max=1,
-            step=0.1,
-            value=0.5,
-        ),
-        dcc.Markdown('', id='time-signature-slider-container'),
-
-        dcc.Markdown('''######  Popularity'''),
-        dcc.Slider(
-            id='popularity-slider',
-            min=0,
-            max=1,
-            step=0.1,
-            value=0.5,
-        ),
-        dcc.Markdown('', id='popularity-slider-container'),
-
-        # Container to display recommendations
-        dcc.Markdown('', id='recommendation-content', style={
-        'textAlign':'center',
-        'font-size':30})
+        
 
     ],
     md=4,
@@ -283,16 +201,14 @@ column1 = dbc.Col(
             **Instructions**: Adjust the attribute sliders. Your prediction outcome will update dynamically. 
             Attribute Definitions:
             * **Duration** - Length of the song in ms
-            * ** Explicit** - Has curse words or language or art that is sexual, violent, or offensive in nature. Left for none and right for has.
-            * **Loudness** -How loud the songs are in dB ranging from -60 to 0
-            * **Danceability** - Danceability describes how suitable a track is for dancing based on a combination of musical elements including tempo, rhythm stability, beat strength, and overall regularity. A value of 0.0 is least danceable and 1.0 is most danceable. 
-            * **Acousticness** -Whether the tracks of artist are acoustic
+            * **Loudness** -How loud the songs are
+            * **Danceability** - Danceability describes how suitable a track is for dancing based on a combination of musical elements.
             * **Energy** - Energy is a measure from 0.0 to 1.0 and represents a perceptual measure of intensity and activity.
-            * **Instrumentalness** - Predicts whether a track contains no vocals. The closer the instrumentalness value is to 1.0, the greater likelihood the track contains no vocal content.            
+            * **Instrumentalness** - The closer the instrumentalness value is to 1.0, the greater likelihood the track contains no vocal content.            
             * **Liveness** - how present audience are in artists songs
             * **US Popularity Level** - Highest point on Billboard  
-            * **Speechiness** - Speechiness detects the presence of spoken words in a track. The more exclusively speech-like the recording (e.g. talk show, audio book, poetry), the closer to 1.0 the attribute value.
-            * **Tempo** - The overall estimated tempo of a track in beats per minute (BPM). In musical terminology, tempo is the speed or pace of a given piece and derives directly from the average beat duration. 
+            * **Speechiness** - The more exclusively speech-like the recording (e.g. talk show, audio book, poetry), the closer to 1.0 the attribute value.
+            * **Tempo** - The overall estimated tempo of a track in beats per minute (BPM).
             * **Year of Release** - Year the track was released 
             """
         ),
@@ -302,19 +218,8 @@ column1 = dbc.Col(
 
 )
 
-column3 = dbc.Col(
-    [
-        #Sanity Test
-        dcc.Graph(figure=plot_graph(data=get_songs([0,6,1609,34455]))),
-        
-        # html.Div(id='prediction-text',children='output will go here'), 
-        # html.Div(id='shapley',children='output will go here'),
-        # dcc.Graph(id='my-graph-name', figure=plotly_figure)
 
 
-    ]
-
-)
 # Takes inputs from user and returning to show their selection
 @app.callback(
     dash.dependencies.Output('duration-slider-container', 'children'),
@@ -408,7 +313,7 @@ def update_output(value):
 
 # Uses the inputs to the user to generate the recommendation
 @app.callback(
-    Output('recommendation-content', 'children'),
+    Output('memory', 'data'),
     [
         Input('duration-slider', 'value'),
         Input('explicit-slider', 'value'),
@@ -440,7 +345,6 @@ def update_list(duration_ms,
                 tempo,
                 time_signature,
                 popularity):
-    # TODO: Write this function
     # Utilize get_songs_via_features to grab songs to display for user to pick
     # from. Route those songs via clicks to get recommendations for those songs.
     # This is just one method of doing this, discussion surrounding this would
@@ -465,12 +369,116 @@ def update_list(duration_ms,
     print('update_list indeces: ', indeces)
     songs = get_songs(indeces)
     print('update_list songs:', songs)
-    return [x.name for x in songs]
+    return [song.id for song in songs]
+
+row1 = dbc.Row(
+    [
+        
+        # Container to display recommendations
+        dcc.Markdown('## Recommended Songs:', style={'textAlign': 'center'}),
+        dcc.Markdown('', id='recommendation-content', style={
+        'textAlign':'center',
+        'font-size':30}),
+        #Sanity Test
+        #dcc.Graph(figure=plot_graph(data=get_songs([0,6,1609,34455]))),
+        dcc.Graph(id = 'my-graph', style={"height": "80vh", "width" : "80vw", "align": "center", "margin": "auto"}),
+        dcc.Store(id='memory')
+    ]
+)
+column3 = dbc.Col([
+    dcc.Markdown('''###### Speechiness'''),
+        dcc.Slider(
+            id='speechiness-slider',
+            min=0,
+            max=1,
+            step=0.1,
+            value=0.5,
+        ),
+        dcc.Markdown('', id='speechiness-slider-container'),
+
+        dcc.Markdown('''###### Acousticness'''),
+        dcc.Slider(
+            id='acousticness-slider',
+            min=0,
+            max=1,
+            step=0.1,
+            value=0.5,
+        ),
+        dcc.Markdown('', id='acousticness-slider-container'),
+
+        dcc.Markdown('''###### Instrumentalness'''),
+        dcc.Slider(
+            id='instrumentalness-slider',
+            min=0,
+            max=1,
+            step=0.1,
+            value=0.5,
+        ),
+        dcc.Markdown('', id='instrumentalness-slider-container'),
+
+        dcc.Markdown('''###### Liveness'''),
+        dcc.Slider(
+            id='liveness-slider',
+            min=0,
+            max=1,
+            step=0.1,
+            value=0.5,
+        ),
+        dcc.Markdown('', id='liveness-slider-container'),
+
+        dcc.Markdown('''###### Valence'''),
+        dcc.Slider(
+            id='valence-slider',
+            min=0,
+            max=1,
+            step=0.1,
+            value=0.5,
+        ),
+        dcc.Markdown('', id='valence-slider-container'),
+
+        dcc.Markdown('''###### Tempo'''),
+        dcc.Slider(
+            id='tempo-slider',
+            min=0,
+            max=1,
+            step=0.1,
+            value=0.5,
+        ),
+        dcc.Markdown('', id='tempo-slider-container'),
+
+        dcc.Markdown('''###### Time Signature'''),
+        dcc.Slider(
+            id='time-signature-slider',
+            min=0,
+            max=1,
+            step=0.1,
+            value=0.5,
+        ),
+        dcc.Markdown('', id='time-signature-slider-container'),
+
+        dcc.Markdown('''######  Popularity'''),
+        dcc.Slider(
+            id='popularity-slider',
+            min=0,
+            max=1,
+            step=0.1,
+            value=0.5,
+        ),
+        dcc.Markdown('', id='popularity-slider-container'),
+])
+
+@app.callback(
+             Output('my-graph', 'figure'),
+             Input('memory', 'data'))
+def update_figure(data):
+    return plot_graph(data=get_songs(data))
 
 
+@app.callback(
+    Output('recommendation-content', 'children'),
+    Input('memory', 'data'))
+def update_recommended(data):
+    return [song.name + '\n' for song in get_songs(data)]
 
 
-
-
-
-layout = dbc.Row([column1,column2,column3])     
+layout = [dbc.Row([column1, column3, column2]), dbc.Row(row1)]
