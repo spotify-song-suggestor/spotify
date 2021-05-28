@@ -302,19 +302,8 @@ column1 = dbc.Col(
 
 )
 
-column3 = dbc.Col(
-    [
-        #Sanity Test
-        dcc.Graph(figure=plot_graph(data=get_songs([0,6,1609,34455]))),
-        
-        # html.Div(id='prediction-text',children='output will go here'), 
-        # html.Div(id='shapley',children='output will go here'),
-        # dcc.Graph(id='my-graph-name', figure=plotly_figure)
 
 
-    ]
-
-)
 # Takes inputs from user and returning to show their selection
 @app.callback(
     dash.dependencies.Output('duration-slider-container', 'children'),
@@ -465,12 +454,24 @@ def update_list(duration_ms,
     print('update_list indeces: ', indeces)
     songs = get_songs(indeces)
     print('update_list songs:', songs)
-    return [x.name for x in songs]
+    return songs
+
+column3 = dbc.Col(
+    [
+        dcc.Markdown('''######  Graph'''),
+        #Sanity Test
+        #dcc.Graph(figure=plot_graph(data=get_songs([0,6,1609,34455]))),
+        dcc.Graph(id = 'my-graph',
+        figure=plot_graph(data=update_list())),
+        dcc.Markdown('', id='graph-container'),
+    ]
+)
+@app.callback(
+            Output('graph-container', 'children'),
+            [Input('recommendation-content', 'children'),]
+             )
+def update_figure(recommendations):
+    return dcc.Graph(figure=plot_graph(data=recommendations))
 
 
-
-
-
-
-
-layout = dbc.Row([column1,column2,column3])     
+layout = dbc.Row([column1,column2,column3])
