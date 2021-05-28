@@ -35,7 +35,6 @@ def recommend(index: int, n: int=5) -> 'tuple[np.ndarray]':
     ### Parameters
     index: index of song
     n: number of recommendations to pull
-
     returns: (dist, ind), array of distances, array of indeces for recommended songs. Includes
     original song.
     '''
@@ -76,7 +75,6 @@ def get_songs_via_features(features: list, n_songs: int=5) -> 'list[int]':
     Converts input into the model's encoding, then runs it through the
     K-NearestNeighbors models
     Returns: 
-
     ### Parameters
     features: A list of all features required to run the model.
     The model encoder expects these inputs in this order:
@@ -95,7 +93,6 @@ def get_songs_via_features(features: list, n_songs: int=5) -> 'list[int]':
     tempo,
     time_signature,
     popularity
-
     n_songs: number of songs to return.
     '''
     vec = model.encoder(np.array(features).reshape(1, -1))
@@ -197,7 +194,6 @@ column1 = dbc.Col(
     [
         dcc.Markdown(
             """
-
             **Instructions**: Adjust the attribute sliders. Your prediction outcome will update dynamically. 
             Attribute Definitions:
             * **Duration** - Length of the song in ms
