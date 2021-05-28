@@ -35,7 +35,6 @@ def recommend(index: int, n: int=5) -> 'tuple[np.ndarray]':
     ### Parameters
     index: index of song
     n: number of recommendations to pull
-
     returns: (dist, ind), array of distances, array of indeces for recommended songs. Includes
     original song.
     '''
@@ -76,7 +75,6 @@ def get_songs_via_features(features: list, n_songs: int=5) -> 'list[int]':
     Converts input into the model's encoding, then runs it through the
     K-NearestNeighbors models
     Returns: 
-
     ### Parameters
     features: A list of all features required to run the model.
     The model encoder expects these inputs in this order:
@@ -95,7 +93,6 @@ def get_songs_via_features(features: list, n_songs: int=5) -> 'list[int]':
     tempo,
     time_signature,
     popularity
-
     n_songs: number of songs to return.
     '''
     vec = model.encoder(np.array(features).reshape(1, -1))
@@ -188,16 +185,13 @@ column2 = dbc.Col(
         
 
     ],
-    md=4,
+    
 )
 
-
-
-column1 = dbc.Col(
+row1 = dbc.Row(
     [
         dcc.Markdown(
             """
-
             **Instructions**: Adjust the attribute sliders. Your prediction outcome will update dynamically. 
             Attribute Definitions:
             * **Duration** - Length of the song in ms
@@ -214,7 +208,7 @@ column1 = dbc.Col(
         ),
 
      ],
-    md=3,
+    
 
 )
 
@@ -371,17 +365,17 @@ def update_list(duration_ms,
     print('update_list songs:', songs)
     return [song.id for song in songs]
 
-row1 = dbc.Row(
+rec_col = dbc.Col(
     [
         
         # Container to display recommendations
-        dcc.Markdown('## Recommended Songs:', style={'textAlign': 'center'}),
+        dcc.Markdown('#### Recommended Songs:', style={'textAlign': 'center'}),
         dcc.Markdown('', id='recommendation-content', style={
         'textAlign':'center',
-        'font-size':30}),
+        'font-size':20}),
         #Sanity Test
         #dcc.Graph(figure=plot_graph(data=get_songs([0,6,1609,34455]))),
-        dcc.Graph(id = 'my-graph', style={"height": "80vh", "width" : "80vw", "align": "center", "margin": "auto"}),
+        dcc.Graph(id = 'my-graph', style={"height": "50%", "width" : "80%", "align": "center", "margin": "auto"}),
         dcc.Store(id='memory')
     ]
 )
@@ -465,7 +459,9 @@ column3 = dbc.Col([
             value=0.5,
         ),
         dcc.Markdown('', id='popularity-slider-container'),
-])
+    ],
+    md=3,
+)
 
 @app.callback(
              Output('my-graph', 'figure'),
@@ -481,4 +477,4 @@ def update_recommended(data):
     return [song.name + '\n' for song in get_songs(data)]
 
 
-layout = [dbc.Row([column1, column3, column2]), dbc.Row(row1)]
+layout = [dbc.Row([column3, column2,rec_col]), dbc.Row(row1)]
